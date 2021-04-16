@@ -74,6 +74,16 @@ CacheBlk::insert(const Addr tag, const bool is_secure,
 }
 
 void
+CacheBlk::insert(const Addr tag, const bool is_secure,
+                 const int src_requestor_ID, const uint32_t task_ID,
+                 const Addr microtag)
+{
+    // Set microtag
+    this->microtag = microtag;
+    this->insert(tag, is_secure, src_requestor_ID, task_ID);
+}
+
+void
 CacheBlkPrintWrapper::print(std::ostream &os, int verbosity,
                             const std::string &prefix) const
 {

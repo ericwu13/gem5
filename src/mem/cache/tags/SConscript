@@ -32,6 +32,7 @@ SimObject('Tags.py')
 
 Source('base.cc')
 Source('base_set_assoc.cc')
+Source('microtagged_tags.cc')
 Source('compressed_tags.cc')
 Source('fa_lru.cc')
 Source('sector_blk.cc')

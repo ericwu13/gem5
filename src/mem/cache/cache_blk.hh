@@ -98,6 +98,8 @@ class CacheBlk : public ReplaceableEntry
      */
     uint8_t *data;
 
+    Addr microtag;
+
     /** block state: OR of CacheBlkStatusBit */
     typedef unsigned State;
 
@@ -211,6 +213,7 @@ class CacheBlk : public ReplaceableEntry
     virtual void invalidate()
     {
         tag = MaxAddr;
+        microtag = MaxAddr;
         task_id = ContextSwitchTaskId::Unknown;
         status = 0;
         whenReady = MaxTick;
@@ -301,6 +304,10 @@ class CacheBlk : public ReplaceableEntry
      */
     virtual void insert(const Addr tag, const bool is_secure,
                         const int src_requestor_ID, const uint32_t task_ID);
+
+    virtual void insert(const Addr tag, const bool is_secure,
+                        const int src_requestor_ID, const uint32_t task_ID,
+                        const Addr microtag);
 
     /**
      * Track the fact that a local locked was issued to the
