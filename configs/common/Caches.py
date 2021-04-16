@@ -64,6 +64,9 @@ class L1_ICache(L1Cache):
 
 class L1_DCache(L1Cache):
     pass
+class L1_MicrotaggedCache(L1Cache):
+    tags = Param.BaseTags(MicrotaggedTags(), "Tag store")
+    pass
 
 class L2Cache(Cache):
     assoc = 8
