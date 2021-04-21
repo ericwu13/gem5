@@ -12,7 +12,8 @@
 #include "mem/cache/replacement_policies/replaceable_entry.hh"
 
 ColumnAssociative::ColumnAssociative(const Params *p)
-    : BaseIndexingPolicy(p), msbShift(floorLog2(numSets) - 1)
+    : BaseIndexingPolicy(p),
+      msbShift(floorLog2(numSets) + floorLog2(assoc) - 1)
 {
 }
 
@@ -143,7 +144,7 @@ ColumnAssociative::deskew(const Addr addr, const uint32_t way) const
 uint32_t
 ColumnAssociative::extractSet(const Addr addr, const uint32_t way) const
 {
-    return hash(addr >> setShift, way) & setMask;
+    return hash(addr >> setShift, way);
 }
 
 /* // I am hoping that this is simply not necessary
@@ -165,7 +166,8 @@ ColumnAssociative::getPossibleEntries(const Addr addr) const
     // Parse all ways
     for (uint32_t way = 0; way < assoc; ++way) {
         // Apply hash to get set, and get way entry in it
-        entries.push_back(sets[extractSet(addr, way)][way]);
+        Addr index = extractSet(addr, way);
+        entries.push_back(sets[index / assoc][index % assoc]);
     }
 
     return entries;
