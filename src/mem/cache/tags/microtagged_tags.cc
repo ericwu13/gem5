@@ -68,6 +68,7 @@ MicrotaggedTags::hash(const Addr addr) const
     Addr p2 = bits<Addr>(addr, 27, 25) ^ bits<Addr>(addr, 14, 12);
 
     return (p1 << 5) | p2;
+    // return 1;
 }
 
 
@@ -120,6 +121,8 @@ MicrotaggedTags::findBlock(Addr addr, bool is_secure) const
             if ((blk->tag == tag) && blk->isValid() &&
                 (blk->isSecure() == is_secure)) {
                 return blk;
+            } else {
+                return nullptr;
             }
         }
     }

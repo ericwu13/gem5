@@ -176,6 +176,15 @@ class MicrotaggedTags : public BaseTags
         const std::vector<ReplaceableEntry*> entries =
             indexingPolicy->getPossibleEntries(addr);
 
+        for (const auto& location : entries) {
+            CacheBlk* blk = static_cast<CacheBlk*>(location);
+            if (blk->microtag == hash(addr)) {
+                evict_blks.push_back(blk);
+                return blk;
+            }
+        }
+
+
         // Choose replacement victim from replacement candidates
         CacheBlk* victim = static_cast<CacheBlk*>(replacementPolicy->getVictim(
                                 entries));
