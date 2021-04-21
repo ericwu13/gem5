@@ -104,10 +104,8 @@ class ColumnAssociative : public BaseIndexingPolicy
      * @param entry The entry.
      * @return the entry's address.
      */
-    /*Nope!
     Addr regenerateAddr(const Addr tag, const ReplaceableEntry* entry) const
                                                                    override;
-    */
 };
 
 #endif //__MEM_CACHE_INDEXING_POLICIES_COLUMN_ASSOCIATIVE_HH__

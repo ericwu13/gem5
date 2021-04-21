@@ -147,16 +147,21 @@ ColumnAssociative::extractSet(const Addr addr, const uint32_t way) const
     return hash(addr >> setShift, way);
 }
 
-/* // I am hoping that this is simply not necessary
 Addr
 ColumnAssociative::regenerateAddr(const Addr tag,
                                   const ReplaceableEntry* entry) const
 {
-    const Addr addr_set = (tag << (msbShift + 1)) | entry->getSet();
-    return (tag << tagShift) |
-           ((deskew(addr_set, entry->getWay()) & setMask) << setShift);
+    Addr index = (entry->getSet() << floorLog2(assoc)) | entry->getWay();
+    Addr addr2 = bits<Addr>(tag, msbShift, 0);
+    Addr shifted_addr2 = addr2;
+    if (way >= 1) {
+        shifted_addr2 = insertBits<Addr, uint8_t>(addr2 >> way, msbShift,
+                                   msbShift - way + 1,
+                                   bits<Addr>(addr2, way - 1, 0));
+    }
+    return (tag << tagShift) | ((index ^ shifted_addr2) << setShift);
 }
-*/
+
 
 std::vector<ReplaceableEntry*>
 ColumnAssociative::getPossibleEntries(const Addr addr) const
@@ -167,7 +172,8 @@ ColumnAssociative::getPossibleEntries(const Addr addr) const
     for (uint32_t way = 0; way < assoc; ++way) {
         // Apply hash to get set, and get way entry in it
         Addr index = extractSet(addr, way);
-        entries.push_back(sets[index / assoc][index % assoc]);
+        entries.push_back(sets[index >> (floorLog2(assoc))]
+                              [index & (assoc-1)]);
     }
 
     return entries;
