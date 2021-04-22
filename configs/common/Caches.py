@@ -68,6 +68,16 @@ class L1_MicrotaggedCache(L1Cache):
     tags = Param.BaseTags(MicrotaggedTags(), "Tag store")
     pass
 
+class ColumnAssoc(BaseSetAssoc):
+    indexing_policy = Param.BaseIndexingPolicy(SkewedAssociative(),
+                        "Indexing policy")
+    pass
+
+class L1_ColumnAssocCache(L1Cache):
+    tags = ColumnAssoc()
+    pass
+
+
 class L2Cache(Cache):
     assoc = 8
     tag_latency = 20

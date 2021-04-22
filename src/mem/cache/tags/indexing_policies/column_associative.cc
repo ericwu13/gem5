@@ -154,10 +154,10 @@ ColumnAssociative::regenerateAddr(const Addr tag,
     Addr index = (entry->getSet() << floorLog2(assoc)) | entry->getWay();
     Addr addr2 = bits<Addr>(tag, msbShift, 0);
     Addr shifted_addr2 = addr2;
-    if (way >= 1) {
-        shifted_addr2 = insertBits<Addr, uint8_t>(addr2 >> way, msbShift,
-                                   msbShift - way + 1,
-                                   bits<Addr>(addr2, way - 1, 0));
+    if (entry->getWay() >= 1) {
+        shifted_addr2 = insertBits<Addr, uint8_t>(addr2 >> entry->getWay(),
+                          msbShift, msbShift - entry->getWay() + 1,
+                          bits<Addr>(addr2, entry->getWay() - 1, 0));
     }
     return (tag << tagShift) | ((index ^ shifted_addr2) << setShift);
 }

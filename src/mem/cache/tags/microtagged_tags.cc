@@ -64,13 +64,21 @@ Addr
 MicrotaggedTags::hash(const Addr addr) const
 {
     // Get relevant bits
-    Addr p1 = bits<Addr>(addr, 19, 15) ^ bits<Addr>(addr, 24, 20);
-    Addr p2 = bits<Addr>(addr, 27, 25) ^ bits<Addr>(addr, 14, 12);
+    // Addr p1 = bits<Addr>(addr, 19, 15) ^ bits<Addr>(addr, 24, 20);
+    // // Addr p2 = reverseBits(bits<Addr>(addr, 27, 25)) >> 60;
+    // Addr p3 = p2 ^ bits<Addr>(addr, 14, 12);
 
-    return (p1 << 5) | p2;
-    // return 1;
+    // return (p1 << 5) | p3;
+    Addr lower_top5 = bits<Addr>(addr, 19, 15);
+    Addr upper_top5 = bits<Addr>(addr, 24, 20);
+    Addr top5 = (lower_top5 ^ upper_top5) << 3;
+    Addr lower3 = 0;
+    lower3 |= (bits<Addr>(addr, 25) ^ bits<Addr>(addr, 14)) << 2;
+    lower3 |= (bits<Addr>(addr, 26) ^ bits<Addr>(addr, 13)) << 1;
+    lower3 |= bits<Addr>(addr, 27) ^ bits<Addr>(addr, 12);
+
+    return top5 | lower3;
 }
-
 
 void
 MicrotaggedTags::tagsInit()

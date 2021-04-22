@@ -127,7 +127,7 @@ def config_cache(options, system):
                 dcache = L1_MicrotaggedCache(size=options.l1d_size,
                                     assoc=options.l1d_assoc)
             elif options.tags == "columnassoc":
-                dcache = dcache_class(size=options.l1d_size,
+                dcache = L1_ColumnAssocCache(size=options.l1d_size,
                                     assoc=options.l1d_assoc)
             else:
                 dcache = dcache_class(size=options.l1d_size,
