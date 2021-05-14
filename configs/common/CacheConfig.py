@@ -120,7 +120,8 @@ def config_cache(options, system):
         if options.caches:
             icache = icache_class(size=options.l1i_size,
                                   assoc=options.l1i_assoc)
-            pseudo_assoctiave_list = ["setassoc", "microtag", "columnassoc"]
+            pseudo_assoctiave_list = ["setassoc", "microtag", "columnassoc",
+                                      "skewedassoc", "microskewed"]
             assert (options.tags in pseudo_assoctiave_list)
 
             if options.tags == "microtag":
@@ -129,9 +130,16 @@ def config_cache(options, system):
             elif options.tags == "columnassoc":
                 dcache = L1_ColumnAssocCache(size=options.l1d_size,
                                     assoc=options.l1d_assoc)
-            else:
-                dcache = dcache_class(size=options.l1d_size,
+            elif options.tags == "skewedassoc":
+                dcache = L1_SkewedAssocCache(size=options.l1d_size,
                                     assoc=options.l1d_assoc)
+            elif options.tags == "microskewed":
+                dcache = L1_MicroSkewedCache(size=options.l1d_size,
+                                    assoc=options.l1d_assoc)
+            else :
+                dcache = dcache_class(size=options.l1d_size,
+                                    assoc=options.l1d_assoc,
+                                    tag_latency=10)
 
             # If we have a walker cache specified, instantiate two
             # instances here

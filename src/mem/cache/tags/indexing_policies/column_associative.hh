@@ -40,6 +40,8 @@ class ColumnAssociative : public BaseIndexingPolicy
      * @param The hashed address.
      */
     Addr hash(const Addr addr, const uint32_t way) const;
+    Addr dehash(const Addr tag, const uint32_t way) const;
+    mutable std::vector<std::vector<Addr>> ways;
 
     /**
      * Address skewing function selection. It selects and applies one of the

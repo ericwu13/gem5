@@ -69,14 +69,29 @@ class L1_MicrotaggedCache(L1Cache):
     pass
 
 class ColumnAssoc(BaseSetAssoc):
+    indexing_policy = Param.BaseIndexingPolicy(ColumnAssociative(),
+                        "Indexing policy")
+    pass
+class SkewedAssoc(BaseSetAssoc):
     indexing_policy = Param.BaseIndexingPolicy(SkewedAssociative(),
                         "Indexing policy")
+    pass
+
+class MicroSkewedAssoc(MicrotaggedTags):
+    indexing_policy = Param.BaseIndexingPolicy(SkewedAssociative(),
+                        "Indexing policy")
+
     pass
 
 class L1_ColumnAssocCache(L1Cache):
     tags = ColumnAssoc()
     pass
-
+class L1_SkewedAssocCache(L1Cache):
+    tags = SkewedAssoc()
+    pass
+class L1_MicroSkewedCache(L1Cache):
+    tags = MicroSkewedAssoc()
+    pass
 
 class L2Cache(Cache):
     assoc = 8

@@ -13,8 +13,11 @@
 
 ColumnAssociative::ColumnAssociative(const Params *p)
     : BaseIndexingPolicy(p),
-      msbShift(floorLog2(numSets) + floorLog2(assoc) - 1)
+      msbShift(floorLog2(numSets) + floorLog2(assoc) - 1), ways(numSets)
 {
+  for (uint32_t i = 0; i < numSets; ++i) {
+    ways[i].resize(assoc);
+  }
 }
 
 Addr
@@ -25,14 +28,34 @@ ColumnAssociative::hash(const Addr addr, const uint32_t way) const
     // So we copy them, and xor the lower bits
     // with a rotating shift by k of the upper bits for way k
     Addr addr1 = bits<Addr>(addr, msbShift, 0);
-    Addr addr2 = bits<Addr>(addr, 2 * (msbShift + 1) - 1, msbShift + 1);
+    Addr addr2 = bits<Addr>(addr, 2 * (msbShift) + 1, msbShift + 1);
     Addr shifted_addr2 = addr2;
     if (way >= 1) {
-        shifted_addr2 = insertBits<Addr, uint8_t>(addr2 >> way, msbShift,
+        shifted_addr2 = insertBits<Addr, Addr>(addr2 >> way, msbShift,
                                    msbShift - way + 1,
                                    bits<Addr>(addr2, way - 1, 0));
     }
     return addr1 ^ shifted_addr2;
+}
+
+Addr
+ColumnAssociative::dehash(const Addr tag, const uint32_t way) const
+{
+    // It appears that addr1 and addr2 from the "skew" function
+    // (below, from skew-associative) are what we want.
+    // So we copy them, and xor the lower bits
+    // with a rotating shift by k of the upper bits for way k
+    Addr addr2 = bits<Addr>(tag, msbShift +
+                floorLog2(assoc), floorLog2(assoc));
+    Addr shifted_addr2 = addr2;
+
+    if (way >= 1) {
+        shifted_addr2 = insertBits<Addr, Addr>(
+                          addr2 >> way, msbShift,
+                          msbShift - way + 1,
+                          bits<Addr>(addr2, way - 1, 0));
+    }
+    return shifted_addr2;
 }
 /*
 Addr
@@ -144,22 +167,19 @@ ColumnAssociative::deskew(const Addr addr, const uint32_t way) const
 uint32_t
 ColumnAssociative::extractSet(const Addr addr, const uint32_t way) const
 {
-    return hash(addr >> setShift, way);
+    return hash(addr >> setShift, way) & setMask;
 }
 
 Addr
 ColumnAssociative::regenerateAddr(const Addr tag,
                                   const ReplaceableEntry* entry) const
 {
-    Addr index = (entry->getSet() << floorLog2(assoc)) | entry->getWay();
-    Addr addr2 = bits<Addr>(tag, msbShift, 0);
-    Addr shifted_addr2 = addr2;
-    if (entry->getWay() >= 1) {
-        shifted_addr2 = insertBits<Addr, uint8_t>(addr2 >> entry->getWay(),
-                          msbShift, msbShift - entry->getWay() + 1,
-                          bits<Addr>(addr2, entry->getWay() - 1, 0));
-    }
-    return (tag << tagShift) | ((index ^ shifted_addr2) << setShift);
+    uint32_t new_set = entry->getSet();
+    uint32_t new_way = entry->getWay();
+    Addr way = ways[new_set][new_way];
+    Addr set = ((new_set << floorLog2(assoc)) | new_way) ^ dehash(tag, way);
+    return (tag << tagShift) |
+    (bits<Addr>(set, floorLog2(numSets)-1, 0)  << setShift);
 }
 
 
@@ -168,12 +188,15 @@ ColumnAssociative::getPossibleEntries(const Addr addr) const
 {
     std::vector<ReplaceableEntry*> entries;
 
+    inform("access addr %p\n", addr);
     // Parse all ways
     for (uint32_t way = 0; way < assoc; ++way) {
         // Apply hash to get set, and get way entry in it
         Addr index = extractSet(addr, way);
-        entries.push_back(sets[index >> (floorLog2(assoc))]
-                              [index & (assoc-1)]);
+        const uint32_t set = index / assoc;
+        const uint32_t new_way = index % assoc;
+        ways[set][new_way] = way;
+        entries.push_back(sets[set][new_way]);
     }
 
     return entries;

@@ -129,6 +129,7 @@ class MicrotaggedTags : public BaseTags
      */
     CacheBlk* accessBlock(Addr addr, bool is_secure, Cycles &lat) override
     {
+        // inform("access addr: %p\n", addr);
         CacheBlk *blk = findBlock(addr, is_secure);
 
         // Access all tags in parallel, hence one in each way.  The data side
@@ -191,7 +192,6 @@ class MicrotaggedTags : public BaseTags
 
         // There is only one eviction for this replacement
         evict_blks.push_back(victim);
-
         return victim;
     }
 

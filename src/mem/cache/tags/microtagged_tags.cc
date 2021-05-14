@@ -136,6 +136,7 @@ MicrotaggedTags::findBlock(Addr addr, bool is_secure) const
     }
 
     // Did not find block
+    // inform("block not found: microtag (%p), tag (%p)\n", microtag, tag);
     return nullptr;
 }
 
